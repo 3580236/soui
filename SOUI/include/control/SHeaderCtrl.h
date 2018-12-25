@@ -21,6 +21,7 @@ namespace SOUI
   #define SHDI_LPARAM              0x0008
   #define SHDI_ORDER               0x0010
   #define SHDI_VISIBLE             0x0020
+  #define SHDI_INDENT              0x0040
 
   /**
    * @enum      _SHDSORTFLAG
@@ -41,16 +42,17 @@ namespace SOUI
    * Describe   列表头项
    */
   typedef struct SHDITEM {
-	  SHDITEM():mask(0),cx(0, SLayoutSize::px),stFlag(ST_NULL),lParam(0),state(0),iOrder(0),bVisible(true){
+	  SHDITEM():mask(0),cx(0, SLayoutSize::px),stFlag(ST_NULL),lParam(0),state(0),iOrder(0),bVisible(true),indent(0, SLayoutSize::px){
 	  }
     UINT    mask; 
     SLayoutSize     cx;
-	STrText strText;
+    STrText strText;
     SHDSORTFLAG stFlag;
     LPARAM  lParam; 
     UINT   state;
     int     iOrder;
-	bool    bVisible;
+    bool    bVisible;
+    SLayoutSize indent;
   }*LPSHDITEM;
 
 
@@ -92,8 +94,8 @@ namespace SOUI
        *
        * Describe  插入新项  
        */      
-      int InsertItem(int iItem,LPCTSTR pszText,int nWidth, SHDSORTFLAG stFlag,LPARAM lParam );
-      int InsertItem(int iItem,LPCTSTR pszText, int nWidth, SLayoutSize::Unit unit, SHDSORTFLAG stFlag,LPARAM lParam );
+      int InsertItem(int iItem,LPCTSTR pszText,int nWidth, SHDSORTFLAG stFlag,LPARAM lParam, int nIndent);
+      int InsertItem(int iItem,LPCTSTR pszText, int nWidth, SLayoutSize::Unit unit, SHDSORTFLAG stFlag,LPARAM lParam, int nIndent);
       /**
        * SHeaderCtrl::GetItem
        * @brief    获得新项
@@ -158,6 +160,9 @@ namespace SOUI
       SOUI_ATTRS_BEGIN()
           ATTR_SKIN(L"itemSkin",m_pSkinItem,FALSE)
           ATTR_SKIN(L"sortSkin",m_pSkinSort,FALSE)
+          ATTR_SKIN(L"divSkin", m_pSkinDiv, FALSE)
+          ATTR_LAYOUTSIZE(L"divWidth", m_nDivWidth, FALSE)
+          ATTR_LAYOUTSIZE(L"divMarginY", m_nDivMarginY, FALSE)
           ATTR_INT(L"fixWidth",m_bFixWidth,FALSE)
           ATTR_INT(L"itemSwapEnable",m_bItemSwapEnable,FALSE)
           ATTR_INT(L"sortHeader",m_bSortHeader,FALSE)
@@ -324,6 +329,9 @@ namespace SOUI
 
       ISkinObj *    m_pSkinItem;  /**< 表头绘制Skin */
       ISkinObj *    m_pSkinSort;  /**< 排序标志Skin */
+      ISkinObj *    m_pSkinDiv;     /**< 表头间隔符Skin */
+      SLayoutSize   m_nDivWidth;    /**< 表头间隔符宽度 */
+      SLayoutSize   m_nDivMarginY;  /**< 表头间隔符上下缩进值 */
       BOOL          m_bSortHeader;      /**< 表头可以点击排序 */
       BOOL          m_bFixWidth;        /**< 表项宽度固定开关 */
       BOOL          m_bItemSwapEnable;  /**< 允许拖动调整位置开关 */

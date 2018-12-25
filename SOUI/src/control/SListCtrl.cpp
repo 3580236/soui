@@ -42,11 +42,11 @@ SListCtrl::~SListCtrl()
 {
 }
 
-int SListCtrl::InsertColumn(int nIndex, LPCTSTR pszText, int nWidth, LPARAM lParam)
+int SListCtrl::InsertColumn(int nIndex, LPCTSTR pszText, int nWidth, LPARAM lParam, int nIndent)
 {
     SASSERT(m_pHeader);
 
-    int nRet = m_pHeader->InsertItem(nIndex, pszText, nWidth, ST_NULL, lParam);
+    int nRet = m_pHeader->InsertItem(nIndex, pszText, nWidth, ST_NULL, lParam, nIndent);
     for(int i=0;i<GetItemCount();i++)
     {
         m_arrItems[i].arSubItems->SetCount(GetColumnCount());

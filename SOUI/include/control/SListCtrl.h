@@ -126,7 +126,7 @@ namespace SOUI
         *
         * Describe  插入一列
         */
-        int             InsertColumn(int nIndex, LPCTSTR pszText, int nWidth, LPARAM lParam=0);
+        int             InsertColumn(int nIndex, LPCTSTR pszText, int nWidth, LPARAM lParam=0, int nIndent = 0);
         /**
         * SListCtrl::InsertItem
         * @brief    插入条目

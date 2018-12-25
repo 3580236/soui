@@ -12,6 +12,7 @@ namespace SOUI
 		, m_bSortHeader(TRUE)
 		, m_pSkinItem(GETBUILTINSKIN(SKIN_SYS_HEADER))
 		, m_pSkinSort(NULL)
+		, m_pSkinDiv(NULL)
 		, m_dwHitTest((DWORD)-1)
 		, m_bDragging(FALSE)
 		, m_hDragImg(NULL)
@@ -27,12 +28,12 @@ namespace SOUI
 	{
 	}
 
-    int SHeaderCtrl::InsertItem(int iItem, LPCTSTR pszText, int nWidth, SHDSORTFLAG stFlag, LPARAM lParam)
+    int SHeaderCtrl::InsertItem(int iItem, LPCTSTR pszText, int nWidth, SHDSORTFLAG stFlag, LPARAM lParam, int nIndent)
     {
-        return InsertItem(iItem, pszText, nWidth, SLayoutSize::px, stFlag, lParam);
+        return InsertItem(iItem, pszText, nWidth, SLayoutSize::px, stFlag, lParam, nIndent);
     }
 
-    int SHeaderCtrl::InsertItem(int iItem, LPCTSTR pszText, int nWidth, SLayoutSize::Unit unit, SHDSORTFLAG stFlag, LPARAM lParam)
+    int SHeaderCtrl::InsertItem(int iItem, LPCTSTR pszText, int nWidth, SLayoutSize::Unit unit, SHDSORTFLAG stFlag, LPARAM lParam, int nIndent)
 	{
 		SASSERT(pszText);
 		SASSERT(nWidth >= 0);
@@ -46,6 +47,7 @@ namespace SOUI
 		item.state = 0;
 		item.iOrder = iItem;
 		item.lParam = lParam;
+		item.indent.setSize((float)nIndent, unit);
 		m_arrItems.InsertAt(iItem, item);
 		//需要更新列的序号
 		for (size_t i = 0; i < GetItemCount(); i++)
@@ -69,6 +71,7 @@ namespace SOUI
 		if (pItem->mask & SHDI_LPARAM) pItem->lParam = m_arrItems[iItem].lParam;
 		if (pItem->mask & SHDI_SORTFLAG) pItem->stFlag = m_arrItems[iItem].stFlag;
 		if (pItem->mask & SHDI_ORDER) pItem->iOrder = m_arrItems[iItem].iOrder;
+		if (pItem->mask & SHDI_INDENT) pItem->indent = m_arrItems[iItem].indent;
 		return TRUE;
 	}
 
@@ -85,6 +88,13 @@ namespace SOUI
 			rcItem.left = rcItem.right;
 			rcItem.right = rcItem.left + m_arrItems[i].cx.toPixelSize(GetScale());
 			DrawItem(pRT, rcItem, m_arrItems.GetData() + i);
+			if (m_pSkinDiv && !m_nDivWidth.isZero()) {
+				CRect rcDiv(rcItem.right,
+				rcItem.top + m_nDivMarginY.toPixelSize(GetScale()),
+				rcItem.right + m_nDivWidth.toPixelSize(GetScale()),
+				rcItem.bottom - m_nDivMarginY.toPixelSize(GetScale()));
+				m_pSkinDiv->Draw(pRT, rcDiv, 0);
+			}
 			if (rcItem.right >= rcClient.right) break;
 		}
 		if (rcItem.right < rcClient.right)
@@ -100,7 +110,8 @@ namespace SOUI
 	{
 		if(!pItem->bVisible) return;
 		if (m_pSkinItem) m_pSkinItem->Draw(pRT, rcItem, pItem->state);
-		pRT->DrawText(pItem->strText.GetText(FALSE), pItem->strText.GetText(FALSE).GetLength(), rcItem, m_style.GetTextAlign());
+		CRect rcText(rcItem.left+pItem->indent.toPixelSize(GetScale()),rcItem.top,rcItem.right,rcItem.bottom);
+		pRT->DrawText(pItem->strText.GetText(FALSE), pItem->strText.GetText(FALSE).GetLength(), rcText, m_style.GetTextAlign());
 		if (pItem->stFlag == ST_NULL || !m_pSkinSort) return;
 		CSize szSort = m_pSkinSort->GetSkinSize();
 		CPoint ptSort;
@@ -345,7 +356,8 @@ namespace SOUI
 			SStringW strText = xmlItem.text().get();
 			strText.TrimBlank();
 			item.strText.SetText(S_CW2T(GETSTRING(strText)));
-            item.cx = GETLAYOUTSIZE(xmlItem.attribute(L"width").as_string(L"50"));// .as_int(50);
+			item.cx = GETLAYOUTSIZE(xmlItem.attribute(L"width").as_string(L"50"));// .as_int(50);
+			item.indent = GETLAYOUTSIZE(xmlItem.attribute(L"indent").as_string(L"0"));
 			item.lParam = xmlItem.attribute(L"userData").as_uint(0);
 			item.stFlag = (SHDSORTFLAG)xmlItem.attribute(L"sortFlag").as_uint(ST_NULL);
 			item.bVisible = xmlItem.attribute(L"visible").as_bool(true);
